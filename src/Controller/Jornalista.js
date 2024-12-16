@@ -29,13 +29,27 @@ module.exports = {
         nome,
         sobrenome,
         email,
-        senha: bcrypt.hashSync(senha, 10),
+        senha: bcrypt.hashSync(senha, 10)
       });
       return res
         .status(201)
         .json({ message: "sucessfully created", jornalista });
     } catch (e) {
       return res.status(400).json({ message: "error", e });
+    }
+  },
+
+  async reset(req, res) {
+    const { email, senha } = req.body;
+    try {
+      const find = await Jornalista.findOne({ where: {email: email}});
+      if(!find){
+        return res.json({message:"jornalista não encontrado!"})
+      }
+      const resetPassword = find.update({senha:bcrypt.hashSync(senha,10)});
+      return res.status(200).json(find);
+    } catch (e) {
+      return res.status(400).json({ message:"error"});
     }
   },
 
@@ -85,7 +99,7 @@ module.exports = {
       const token = generateToken({ id: ProcurarEmail.id });
       return res.status(200).json({ message: ProcurarEmail, token: token });
     } catch (e) {
-      return res.json({message:e});
+      return res.json({ message: e });
     }
   },
 };
